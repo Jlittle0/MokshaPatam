@@ -1,4 +1,7 @@
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
+import java.util.Stack;
 
 /**
  * Moksha Patam
@@ -19,19 +22,43 @@ public class MokshaPatam {
      *  to reach the final square on a board with the given size, ladders, and snakes.
      */
     public static int fewestMoves(int boardsize, int[][] ladders, int[][] snakes) {
-        // Basic version of the project that doesn't account for multiple ladders being required
-        // or using snakes to traverse the space or literally anything other than the tallest
-        // singular ladder that allows you to move up in the board.
-        // Add a check path method that returns minRolls here for each ladder;
+        // Sorts the ladder and snake 2D arrays and prevents integer overflow via Intenger.compare
+        Arrays.sort(snakes, (a, b) -> Integer.compare(a[0],b[0]));
+        Arrays.sort(ladders, (a, b) -> Integer.compare(a[0],b[0]));
+
+        // Checks if the board is possible to complete
         if (!checkPossible(boardsize, ladders, snakes))
             return -1;
-        int minRolls = Integer.MAX_VALUE;
-       for (int i = 0; i < ladders.length; i++)
+        int minRolls = (boardsize + MAX_ROLL - 1) / MAX_ROLL;
+        for (int i = 0; i < ladders.length; i++)
            if ((ladders[i][0] + MAX_ROLL - 1) / MAX_ROLL + (boardsize - ladders[i][1] + MAX_ROLL - 1) / MAX_ROLL < minRolls)
                minRolls = (ladders[i][0] + MAX_ROLL - 1) / MAX_ROLL + (boardsize - ladders[i][1] + MAX_ROLL - 1) / MAX_ROLL;
-//        System.out.println(Arrays.deepToString(snakes));
-//        System.out.println(Arrays.deepToString(ladders));
-//        System.out.println(boardsize);
+
+//        ArrayList<SpecialCell> cells = new ArrayList<SpecialCell>();
+//        for (int i = 0; i < ladders.length; i++)
+//            cells.add(new SpecialCell(ladders[i][0], ladders[i][1]));
+//        for (int i = 0; i < snakes.length; i++)
+//            cells.add(new SpecialCell(snakes[i][0], snakes[i][1]));
+//        Stack<int[]> path = new Stack<int[]>();
+//        path.push(new int[]{0, 0});
+//        boolean validSpecial = true;
+//        int initialPosition = 1;
+//        int currentPosition = initialPosition;
+//        if (ladders.length == 0 && snakes.length == 0)
+//            validSpecial = false;
+//        while (validSpecial) {
+//            currentPosition = path.peek()[1];
+//
+//        }
+
+
+
+
+
+        Arrays.sort(snakes, (a, b) -> Integer.compare(a[0],b[0]));
+        System.out.println(Arrays.deepToString(snakes));
+        System.out.println(Arrays.deepToString(ladders));
+        System.out.println(boardsize);
         return minRolls;
     }
 
@@ -50,26 +77,18 @@ public class MokshaPatam {
                     return false;
         }
 
-        // Sorts the array of snakes into chronological order
-        int count = 1;
-        int[][] temp = new int[1][1];
-        for (int i = 0; i < snakes.length; i++)
-            for (int j = 0; j < snakes.length; j++)
-                if (snakes[i][0] > snakes[j][0]) {
-                    temp[0] = snakes[i];
-                    snakes[i]= snakes[j];
-                    snakes[j] = temp[0];
-                }
-
-        // Checks if there's a block of 6 snakes (doesn't check for ladders passing it)
+        // Checks if there's a block of 6 snakes and no ladder to avoid it
         for (int i = 0; i < snakes.length - 1; i++) {
                 if (snakes[i][0] - snakes[i + 1][0]== 1)
                     count++;
                 else
                     count =1;
-            if (count == 6)
-                // Make sure to include checking for a ladder that goes past the snake block later
+            if (count == 6) {
+                for (int j = 0; i < ladders.length; j++)
+                    if (ladders[j][0] > snakes[i-4][0])
+                        return true;
                 return false;
+            }
         }
         return true;
     }
