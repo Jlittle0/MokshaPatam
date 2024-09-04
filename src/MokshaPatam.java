@@ -54,11 +54,9 @@ public class MokshaPatam {
 
 
 
-
-        Arrays.sort(snakes, (a, b) -> Integer.compare(a[0],b[0]));
-        System.out.println(Arrays.deepToString(snakes));
-        System.out.println(Arrays.deepToString(ladders));
-        System.out.println(boardsize);
+//        System.out.println(Arrays.deepToString(snakes));
+//        System.out.println(Arrays.deepToString(ladders));
+//        System.out.println(boardsize);
         return minRolls;
     }
 
