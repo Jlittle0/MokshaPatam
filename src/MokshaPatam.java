@@ -1,7 +1,4 @@
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.Stack;
+import java.util.*;
 
 /**
  * Moksha Patam
@@ -21,6 +18,13 @@ public class MokshaPatam {
      * TODO: Complete this function, fewestMoves(), to return the minimum number of moves
      *  to reach the final square on a board with the given size, ladders, and snakes.
      */
+    public static ArrayList<SpecialCell> getPaths(int currentPosition, ArrayList<SpecialCell> cells) {
+        ArrayList<SpecialCell> paths = new ArrayList<>();
+
+
+        return paths;
+    }
+
     public static int fewestMoves(int boardsize, int[][] ladders, int[][] snakes) {
         // Sorts the ladder and snake 2D arrays and prevents integer overflow via Intenger.compare
         Arrays.sort(snakes, (a, b) -> Integer.compare(a[0],b[0]));
@@ -29,10 +33,34 @@ public class MokshaPatam {
         // Checks if the board is possible to complete
         if (!checkPossible(boardsize, ladders, snakes))
             return -1;
-        int minRolls = (boardsize + MAX_ROLL - 1) / MAX_ROLL;
+
+        ArrayList<SpecialCell> cells = new ArrayList<SpecialCell>();
         for (int i = 0; i < ladders.length; i++)
-           if ((ladders[i][0] + MAX_ROLL - 1) / MAX_ROLL + (boardsize - ladders[i][1] + MAX_ROLL - 1) / MAX_ROLL < minRolls)
-               minRolls = (ladders[i][0] + MAX_ROLL - 1) / MAX_ROLL + (boardsize - ladders[i][1] + MAX_ROLL - 1) / MAX_ROLL;
+            cells.add(new SpecialCell(ladders[i][0], ladders[i][1]));
+        for (int i = 0; i < snakes.length; i++)
+            cells.add(new SpecialCell(snakes[i][0], snakes[i][1]));
+        cells.sort((a, b) -> Integer.compare(a.getStart(), b.getStart()));
+        Queue<SpecialCell> path = new LinkedList<>();
+        path.add(new SpecialCell(1, 1));
+        boolean validPaths;
+        int currentPos;
+        while (!path.isEmpty()) {
+            validPaths = false;
+            currentPos = path.peek().getEnd();
+            for (SpecialCell cell : getPaths(currentPos, cells)) {
+
+            }
+        }
+
+
+
+//        int minRolls = (boardsize + MAX_ROLL - 1) / MAX_ROLL;
+//        for (int i = 0; i < ladders.length; i++)
+//           if ((ladders[i][0] + MAX_ROLL - 1) / MAX_ROLL + (boardsize - ladders[i][1] + MAX_ROLL - 1) / MAX_ROLL < minRolls)
+//               minRolls = (ladders[i][0] + MAX_ROLL - 1) / MAX_ROLL + (boardsize - ladders[i][1] + MAX_ROLL - 1) / MAX_ROLL;
+
+
+
 
 //        ArrayList<SpecialCell> cells = new ArrayList<SpecialCell>();
 //        for (int i = 0; i < ladders.length; i++)
@@ -50,6 +78,11 @@ public class MokshaPatam {
 //            currentPosition = path.peek()[1];
 //
 //        }
+        // Check the remainder of the min_roll function above and if there are more than that number of snakes within the space, increase the min roll by 1 to compensate.
+
+
+
+        // Create a queue and a boolean variable first special. If this is true, only allow ladders to be selected since snakes make no sense, and then after that if it's false then include both possible ladders and snakes.
 
 
 
@@ -75,6 +108,7 @@ public class MokshaPatam {
                     return false;
         }
 
+        int count = 1;
         // Checks if there's a block of 6 snakes and no ladder to avoid it
         for (int i = 0; i < snakes.length - 1; i++) {
                 if (snakes[i][0] - snakes[i + 1][0]== 1)
