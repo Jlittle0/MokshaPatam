@@ -20,12 +20,22 @@ public class MokshaPatam {
      */
     public static ArrayList<SpecialCell> getPaths(int currentPosition, ArrayList<SpecialCell> cells) {
         ArrayList<SpecialCell> paths = new ArrayList<>();
-
-
+        for (int i = 0; i < cells.size(); i++)
+            if (cells.get(i).getStart() > currentPosition) {
+                paths.addAll(i, cells);
+                break;
+            }
         return paths;
     }
 
+    public static int calculatePathRolls(SpecialCell cell) {
+        int numRolls = Integer.MAX_VALUE;
+
+        return numRolls;
+    }
+
     public static int fewestMoves(int boardsize, int[][] ladders, int[][] snakes) {
+        int minRolls = (boardsize + MAX_ROLL - 1) / MAX_ROLL;
         // Sorts the ladder and snake 2D arrays and prevents integer overflow via Intenger.compare
         Arrays.sort(snakes, (a, b) -> Integer.compare(a[0],b[0]));
         Arrays.sort(ladders, (a, b) -> Integer.compare(a[0],b[0]));
@@ -48,7 +58,16 @@ public class MokshaPatam {
             validPaths = false;
             currentPos = path.peek().getEnd();
             for (SpecialCell cell : getPaths(currentPos, cells)) {
-
+                if (cell != null) {
+                    path.add(cell);
+                    cell.setParent(path.peek());
+                    validPaths = true;
+                }
+            }
+            if (!validPaths) {
+                if (calculatePathRolls(path.peek()) < minRolls)
+                    minRolls = calculatePathRolls(path.peek());
+                path.remove();
             }
         }
 
