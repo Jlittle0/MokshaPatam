@@ -22,19 +22,47 @@ public class MokshaPatam {
         ArrayList<SpecialCell> paths = new ArrayList<>();
         for (int i = 0; i < cells.size(); i++)
             if (cells.get(i).getStart() > currentPosition) {
-                paths.addAll(i, cells);
+                for (int j = 0; j < cells.size() - i; j++)
+                    paths.add(cells.get(i + j));
                 break;
             }
+        for (int i = 0; i < paths.size(); i++)
+            System.out.print("[" + paths.get(i).getStart() + ", " + paths.get(i).getEnd() + "] ");
+        System.out.println();
         return paths;
     }
 
-    public static int calculatePathRolls(SpecialCell cell) {
-        int numRolls = Integer.MAX_VALUE;
+    public static int calculatePathRolls(SpecialCell cell, ArrayList<SpecialCell> cells, int boardsize) {
+        int numRolls;
+        int temp = boardsize - cell.getEnd();
+        int start = cell.getEnd();
+        numRolls = calculateRolls(cells, cell.getEnd(), boardsize);
+        while (cell.getParent() != null) {
+            numRolls += calculateRolls(cells, cell.getParent().getEnd(), cell.getStart());
+            cell = cell.getParent();
+        }
+        numRolls += calculateRolls(cells, 1, cell.getStart());
+        System.out.println("Rolls: " + numRolls);
+        return numRolls;
+    }
 
+    public static int calculateRolls(ArrayList<SpecialCell> cells, int start, int end) {
+        // Fix this entire thing
+        int count = 0;
+        int numRolls;
+        int remainder = (end - start + MAX_ROLL - 1) % MAX_ROLL;
+        for (int i = 0; i < cells.size(); i++)
+            if (cells.get(i).getStart() > start && cells.get(i).getStart() < end)
+                count++;
+        if (count > remainder)
+                numRolls = (end - start + MAX_ROLL - 1) / MAX_ROLL + 1;
+        else
+            numRolls = (end - start + MAX_ROLL - 1) / MAX_ROLL;
         return numRolls;
     }
 
     public static int fewestMoves(int boardsize, int[][] ladders, int[][] snakes) {
+        int test = 0;
         int minRolls = (boardsize + MAX_ROLL - 1) / MAX_ROLL;
         // Sorts the ladder and snake 2D arrays and prevents integer overflow via Intenger.compare
         Arrays.sort(snakes, (a, b) -> Integer.compare(a[0],b[0]));
@@ -43,7 +71,8 @@ public class MokshaPatam {
         // Checks if the board is possible to complete
         if (!checkPossible(boardsize, ladders, snakes))
             return -1;
-
+        System.out.println(Arrays.deepToString(snakes));
+        System.out.println(Arrays.deepToString(ladders));
         ArrayList<SpecialCell> cells = new ArrayList<SpecialCell>();
         for (int i = 0; i < ladders.length; i++)
             cells.add(new SpecialCell(ladders[i][0], ladders[i][1]));
@@ -55,20 +84,27 @@ public class MokshaPatam {
         boolean validPaths;
         int currentPos;
         while (!path.isEmpty()) {
+            System.out.println("Start:" + path.peek().getStart());
             validPaths = false;
             currentPos = path.peek().getEnd();
+            System.out.println("currentPos: " + currentPos);
             for (SpecialCell cell : getPaths(currentPos, cells)) {
-                if (cell != null) {
+                // Make sure to change so that cells are only considered "explored" once they've been added to the queue and have added all the possible paths.
+                if (cell != null && !cell.isExplored()) {
+                    cell.setExplored(true);
                     path.add(cell);
                     cell.setParent(path.peek());
                     validPaths = true;
                 }
             }
             if (!validPaths) {
-                if (calculatePathRolls(path.peek()) < minRolls)
-                    minRolls = calculatePathRolls(path.peek());
-                path.remove();
+                test++;
+                if (calculatePathRolls(path.peek(), cells, boardsize) < minRolls)
+                    // CalculatePathRolls completely doesn't work.
+                    minRolls = calculatePathRolls(path.peek(), cells, boardsize);
+                System.out.println("minRolls2: " + minRolls);
             }
+            path.remove();
         }
 
 
