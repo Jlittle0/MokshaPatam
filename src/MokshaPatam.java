@@ -33,7 +33,7 @@ public class MokshaPatam {
     }
 
     public static int calculatePathRolls(SpecialCell cell, ArrayList<SpecialCell> cells, int boardsize) {
-        int numRolls;
+        int numRolls = 0;
         int temp = boardsize - cell.getEnd();
         int start = cell.getEnd();
         numRolls = calculateRolls(cells, cell.getEnd(), boardsize);
@@ -49,7 +49,7 @@ public class MokshaPatam {
     public static int calculateRolls(ArrayList<SpecialCell> cells, int start, int end) {
         // Fix this entire thing
         int count = 0;
-        int numRolls;
+        int numRolls = 0;
         int remainder = (end - start + MAX_ROLL - 1) % MAX_ROLL;
         for (int i = 0; i < cells.size(); i++)
             if (cells.get(i).getStart() > start && cells.get(i).getStart() < end)
@@ -73,39 +73,81 @@ public class MokshaPatam {
             return -1;
         System.out.println(Arrays.deepToString(snakes));
         System.out.println(Arrays.deepToString(ladders));
-        ArrayList<SpecialCell> cells = new ArrayList<SpecialCell>();
+
+        int[] map = new int[boardsize + 1];
+        for (int i = 0; i < map.length; i++)
+            map[i] = i;
+        for (int i = 0; i < snakes.length; i++) {
+            map[snakes[i][0]] = snakes[i][1];
+        }
         for (int i = 0; i < ladders.length; i++)
-            cells.add(new SpecialCell(ladders[i][0], ladders[i][1]));
-        for (int i = 0; i < snakes.length; i++)
-            cells.add(new SpecialCell(snakes[i][0], snakes[i][1]));
-        cells.sort((a, b) -> Integer.compare(a.getStart(), b.getStart()));
-        Queue<SpecialCell> path = new LinkedList<>();
-        path.add(new SpecialCell(1, 1));
-        boolean validPaths;
-        int currentPos;
+            map[ladders[i][0]] = ladders[i][1];
+        boolean[] previouslyVisited = new boolean[boardsize + 1];
+        Queue<int[]> path = new LinkedList<>();
+        path.add(new int[]{1,0});
+        int[] currentNode;
         while (!path.isEmpty()) {
-            System.out.println("Start:" + path.peek().getStart());
-            validPaths = false;
-            currentPos = path.peek().getEnd();
-            System.out.println("currentPos: " + currentPos);
-            for (SpecialCell cell : getPaths(currentPos, cells)) {
-                // Make sure to change so that cells are only considered "explored" once they've been added to the queue and have added all the possible paths.
-                if (cell != null && !cell.isExplored()) {
-                    cell.setExplored(true);
-                    path.add(cell);
-                    cell.setParent(path.peek());
-                    validPaths = true;
+            previouslyVisited[path.peek()[0]] = true;
+            currentNode = path.remove();
+            System.out.println("Node: " + map[currentNode[0]]);
+            if (currentNode[0] == boardsize) {
+                if (currentNode[1]< minRolls) {
+                    minRolls = currentNode[1];
                 }
             }
-            if (!validPaths) {
-                test++;
-                if (calculatePathRolls(path.peek(), cells, boardsize) < minRolls)
-                    // CalculatePathRolls completely doesn't work.
-                    minRolls = calculatePathRolls(path.peek(), cells, boardsize);
-                System.out.println("minRolls2: " + minRolls);
+            else if (currentNode[0] > boardsize - MAX_ROLL){
+                if (currentNode[1] + 1 < minRolls) {
+                    System.out.println(currentNode[0]);
+                    minRolls = currentNode[1] + 1;
+                }
             }
-            path.remove();
+            else
+                for (int i = 1; i < MAX_ROLL + 1; i++) {
+                // Fix this if statement
+                if (!previouslyVisited[map[currentNode[0] + i]] && map[currentNode[0]] + i < boardsize) {
+                    System.out.println("Number: " + (map[currentNode[0] + i]));
+                    path.add(new int[]{map[currentNode[0] + i], currentNode[1] + 1});
+                    System.out.println("Rolls " + path.peek()[1]);
+                    previouslyVisited[map[currentNode[0]] + i] = true;
+                }
+            }
         }
+
+
+//        ArrayList<SpecialCell> cells = new ArrayList<SpecialCell>();
+//        for (int i = 0; i < ladders.length; i++)
+//            cells.add(new SpecialCell(ladders[i][0], ladders[i][1]));
+//        for (int i = 0; i < snakes.length; i++)
+//            cells.add(new SpecialCell(snakes[i][0], snakes[i][1]));
+//        cells.sort((a, b) -> Integer.compare(a.getStart(), b.getStart()));
+//        Queue<SpecialCell> path = new LinkedList<>();
+//        path.add(new SpecialCell(1, 1));
+//        boolean validPaths;
+//        int currentPos;
+//        while (!path.isEmpty()) {
+//            System.out.println("Start:" + path.peek().getStart());
+//            validPaths = false;
+//            currentPos = path.peek().getEnd();
+//            System.out.println("currentPos: " + currentPos);
+//            path.peek().setExplored(true);
+//            for (SpecialCell cell : getPaths(currentPos, cells)) {
+//                // Make sure to change so that cells are only considered "explored" once they've been added to the queue and have added all the possible paths.
+//                if (cell != null && !cell.isExplored()) {
+//                    path.peek().setExplored(true);
+//                    path.add(cell);
+//                    cell.setParent(path.peek());
+//                    validPaths = true;
+//                }
+//            }
+//            if (!validPaths) {
+//                test++;
+//                if (calculatePathRolls(path.peek(), cells, boardsize) < minRolls)
+//                    // CalculatePathRolls completely doesn't work.
+//                    minRolls = calculatePathRolls(path.peek(), cells, boardsize);
+//                System.out.println("minRolls2: " + minRolls);
+//            }
+//            path.remove();
+//        }
 
 
 
