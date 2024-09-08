@@ -89,15 +89,14 @@ public class MokshaPatam {
         while (!path.isEmpty()) {
             previouslyVisited[path.peek()[0]] = true;
             currentNode = path.remove();
-            System.out.println("Node: " + map[currentNode[0]]);
+            System.out.println("Node: " + map[currentNode[0]] + ", " + map[currentNode[1]]);
             if (currentNode[0] == boardsize) {
                 if (currentNode[1]< minRolls) {
                     minRolls = currentNode[1];
                 }
             }
-            else if (currentNode[0] > boardsize - MAX_ROLL){
+            else if (currentNode[0] >= boardsize - MAX_ROLL){
                 if (currentNode[1] + 1 < minRolls) {
-                    System.out.println(currentNode[0]);
                     minRolls = currentNode[1] + 1;
                 }
             }
@@ -107,7 +106,6 @@ public class MokshaPatam {
                 if (!previouslyVisited[map[currentNode[0] + i]] && map[currentNode[0]] + i < boardsize) {
                     System.out.println("Number: " + (map[currentNode[0] + i]));
                     path.add(new int[]{map[currentNode[0] + i], currentNode[1] + 1});
-                    System.out.println("Rolls " + path.peek()[1]);
                     previouslyVisited[map[currentNode[0]] + i] = true;
                 }
             }
@@ -208,7 +206,7 @@ public class MokshaPatam {
         int count = 1;
         // Checks if there's a block of 6 snakes and no ladder to avoid it
         for (int i = 0; i < snakes.length - 1; i++) {
-                if (snakes[i][0] - snakes[i + 1][0]== 1)
+                if (snakes[i][0] - snakes[i + 1][0] == -1)
                     count++;
                 else
                     count =1;
