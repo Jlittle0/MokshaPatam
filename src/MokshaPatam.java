@@ -18,52 +18,12 @@ public class MokshaPatam {
      * TODO: Complete this function, fewestMoves(), to return the minimum number of moves
      *  to reach the final square on a board with the given size, ladders, and snakes.
      */
-    public static ArrayList<SpecialCell> getPaths(int currentPosition, ArrayList<SpecialCell> cells) {
-        ArrayList<SpecialCell> paths = new ArrayList<>();
-        for (int i = 0; i < cells.size(); i++)
-            if (cells.get(i).getStart() > currentPosition) {
-                for (int j = 0; j < cells.size() - i; j++)
-                    paths.add(cells.get(i + j));
-                break;
-            }
-        for (int i = 0; i < paths.size(); i++)
-            System.out.print("[" + paths.get(i).getStart() + ", " + paths.get(i).getEnd() + "] ");
-        System.out.println();
-        return paths;
-    }
 
-    public static int calculatePathRolls(SpecialCell cell, ArrayList<SpecialCell> cells, int boardsize) {
-        int numRolls = 0;
-        int temp = boardsize - cell.getEnd();
-        int start = cell.getEnd();
-        numRolls = calculateRolls(cells, cell.getEnd(), boardsize);
-        while (cell.getParent() != null) {
-            numRolls += calculateRolls(cells, cell.getParent().getEnd(), cell.getStart());
-            cell = cell.getParent();
-        }
-        numRolls += calculateRolls(cells, 1, cell.getStart());
-        System.out.println("Rolls: " + numRolls);
-        return numRolls;
-    }
-
-    public static int calculateRolls(ArrayList<SpecialCell> cells, int start, int end) {
-        // Fix this entire thing
-        int count = 0;
-        int numRolls = 0;
-        int remainder = (end - start + MAX_ROLL - 1) % MAX_ROLL;
-        for (int i = 0; i < cells.size(); i++)
-            if (cells.get(i).getStart() > start && cells.get(i).getStart() < end)
-                count++;
-        if (count > remainder)
-                numRolls = (end - start + MAX_ROLL - 1) / MAX_ROLL + 1;
-        else
-            numRolls = (end - start + MAX_ROLL - 1) / MAX_ROLL;
-        return numRolls;
-    }
 
     public static int fewestMoves(int boardsize, int[][] ladders, int[][] snakes) {
-        int test = 0;
-        int minRolls = (boardsize + MAX_ROLL - 1) / MAX_ROLL;
+        // Set the current rolls to the max integer value, easier to see errors
+        int minRolls = Integer.MAX_VALUE;
+
         // Sorts the ladder and snake 2D arrays and prevents integer overflow via Intenger.compare
         Arrays.sort(snakes, (a, b) -> Integer.compare(a[0],b[0]));
         Arrays.sort(ladders, (a, b) -> Integer.compare(a[0],b[0]));
@@ -71,9 +31,9 @@ public class MokshaPatam {
         // Checks if the board is possible to complete
         if (!checkPossible(boardsize, ladders, snakes))
             return -1;
-        System.out.println(Arrays.deepToString(snakes));
-        System.out.println(Arrays.deepToString(ladders));
 
+        // Initializes a map of the board and adds all the snakes/ladders by entering their end
+        // position for the index where they would start.
         int[] map = new int[boardsize + 1];
         for (int i = 0; i < map.length; i++)
             map[i] = i;
@@ -82,14 +42,23 @@ public class MokshaPatam {
         }
         for (int i = 0; i < ladders.length; i++)
             map[ladders[i][0]] = ladders[i][1];
+
+        // Create a previouslyVisited copy of the map to see which squares have been visited already.
         boolean[] previouslyVisited = new boolean[boardsize + 1];
+        // Path for the route of rolls using a queue that stores the current location as well as
+        // the number of rolls required to get to that space given the previous squares/moves.
         Queue<int[]> path = new LinkedList<>();
+        // Add the starting square to the queue and begin
         path.add(new int[]{1,0});
         int[] currentNode;
+        // While loop to continuously run until the queue is empty and there are no more paths
+        // to explore.
         while (!path.isEmpty()) {
             previouslyVisited[path.peek()[0]] = true;
             currentNode = path.remove();
-            System.out.println("Node: " + map[currentNode[0]] + ", " + map[currentNode[1]]);
+            // If statements to check if the end has been reached and the new minimum rolls needs
+            // to be checked. Did an else if to prevent problems on the last square. Replaces min
+            // rolls as long as the current rolls tracked via the 2nd array element is less than it.
             if (currentNode[0] == boardsize) {
                 if (currentNode[1]< minRolls) {
                     minRolls = currentNode[1];
@@ -101,90 +70,17 @@ public class MokshaPatam {
                 }
             }
             else
+                // Add the next six spaces for each roll/current position to the pat as long as
+                // they haven't already been visited.
                 for (int i = 1; i < MAX_ROLL + 1; i++) {
-                // Fix this if statement
                 if (!previouslyVisited[map[currentNode[0] + i]] && map[currentNode[0]] + i < boardsize) {
-                    System.out.println("Number: " + (map[currentNode[0] + i]));
                     path.add(new int[]{map[currentNode[0] + i], currentNode[1] + 1});
+                    // Sets the status to all added elements as previously visited.
                     previouslyVisited[map[currentNode[0]] + i] = true;
                 }
             }
         }
-
-
-//        ArrayList<SpecialCell> cells = new ArrayList<SpecialCell>();
-//        for (int i = 0; i < ladders.length; i++)
-//            cells.add(new SpecialCell(ladders[i][0], ladders[i][1]));
-//        for (int i = 0; i < snakes.length; i++)
-//            cells.add(new SpecialCell(snakes[i][0], snakes[i][1]));
-//        cells.sort((a, b) -> Integer.compare(a.getStart(), b.getStart()));
-//        Queue<SpecialCell> path = new LinkedList<>();
-//        path.add(new SpecialCell(1, 1));
-//        boolean validPaths;
-//        int currentPos;
-//        while (!path.isEmpty()) {
-//            System.out.println("Start:" + path.peek().getStart());
-//            validPaths = false;
-//            currentPos = path.peek().getEnd();
-//            System.out.println("currentPos: " + currentPos);
-//            path.peek().setExplored(true);
-//            for (SpecialCell cell : getPaths(currentPos, cells)) {
-//                // Make sure to change so that cells are only considered "explored" once they've been added to the queue and have added all the possible paths.
-//                if (cell != null && !cell.isExplored()) {
-//                    path.peek().setExplored(true);
-//                    path.add(cell);
-//                    cell.setParent(path.peek());
-//                    validPaths = true;
-//                }
-//            }
-//            if (!validPaths) {
-//                test++;
-//                if (calculatePathRolls(path.peek(), cells, boardsize) < minRolls)
-//                    // CalculatePathRolls completely doesn't work.
-//                    minRolls = calculatePathRolls(path.peek(), cells, boardsize);
-//                System.out.println("minRolls2: " + minRolls);
-//            }
-//            path.remove();
-//        }
-
-
-
-//        int minRolls = (boardsize + MAX_ROLL - 1) / MAX_ROLL;
-//        for (int i = 0; i < ladders.length; i++)
-//           if ((ladders[i][0] + MAX_ROLL - 1) / MAX_ROLL + (boardsize - ladders[i][1] + MAX_ROLL - 1) / MAX_ROLL < minRolls)
-//               minRolls = (ladders[i][0] + MAX_ROLL - 1) / MAX_ROLL + (boardsize - ladders[i][1] + MAX_ROLL - 1) / MAX_ROLL;
-
-
-
-
-//        ArrayList<SpecialCell> cells = new ArrayList<SpecialCell>();
-//        for (int i = 0; i < ladders.length; i++)
-//            cells.add(new SpecialCell(ladders[i][0], ladders[i][1]));
-//        for (int i = 0; i < snakes.length; i++)
-//            cells.add(new SpecialCell(snakes[i][0], snakes[i][1]));
-//        Stack<int[]> path = new Stack<int[]>();
-//        path.push(new int[]{0, 0});
-//        boolean validSpecial = true;
-//        int initialPosition = 1;
-//        int currentPosition = initialPosition;
-//        if (ladders.length == 0 && snakes.length == 0)
-//            validSpecial = false;
-//        while (validSpecial) {
-//            currentPosition = path.peek()[1];
-//
-//        }
-        // Check the remainder of the min_roll function above and if there are more than that number of snakes within the space, increase the min roll by 1 to compensate.
-
-
-
-        // Create a queue and a boolean variable first special. If this is true, only allow ladders to be selected since snakes make no sense, and then after that if it's false then include both possible ladders and snakes.
-
-
-
-
-//        System.out.println(Arrays.deepToString(snakes));
-//        System.out.println(Arrays.deepToString(ladders));
-//        System.out.println(boardsize);
+        // After the while loop is done, return the minimum rolls.
         return minRolls;
     }
 
